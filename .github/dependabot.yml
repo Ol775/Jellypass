@@ -4,6 +4,12 @@ updates:
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    ignore:
+      # Copied into src/views/vendor/ by scripts/vendor.mjs, so bumping the npm version changes nothing that ships.
+      # Update them by running that script on purpose.
+      - dependency-name: maplibre-gl
+      - dependency-name: pmtiles
+      - dependency-name: qrcode-generator
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
