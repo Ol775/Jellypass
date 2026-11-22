@@ -1,0 +1,40 @@
+import { html } from 'hono/html';
+import type { SessionInfo } from '../auth';
+import { brand, errorRegion, layout, script, statusRegion } from './layout';
+const iconSprite = html`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="feather" viewBox="0 0 24 24"><path d="M3 7h18v3.5a1.9 1.9 0 000 3.9V18H3v-3.6a1.9 1.9 0 000-3.9z"/><path d="M10.5 9.7l4 2.3-4 2.3z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></symbol>
+<symbol id="chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></symbol>
+<symbol id="dev" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+<symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 3.5M12 17h.01"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0M16 4.5a3.5 3.5 0 010 7M18 14a6 6 0 013.5 6"/></symbol>
+<symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/></symbol>
+<symbol id="mega" viewBox="0 0 24 24"><path d="M4 10v4l12 5V5L4 10zM8 15v4"/></symbol>
+<symbol id="log" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 12h7M9 16h7"/></symbol>
+<symbol id="cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></symbol>
+<symbol id="pulse" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="out" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 00-2 2v12a2 2 0 002 2h3M16 8l4 4-4 4M20 12H9"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+<symbol id="sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+<symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></symbol>
+<symbol id="duo" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></symbol>
+<symbol id="menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+</defs></svg>`;
+const navIcons:Record<string,string> = {home:"home",discover:"film",history:"chart",wrapped:"sparkle",compare:"duo",devices:"dev",account:"lock",preferences:"sliders",status:"pulse",help:"help",users:"users",invites:"mail",streams:"play",announcements:"mega",audit:"log",security:"shield",settings:"cog"};
+export const compareLink = ['compare','/compare','Compare'];
+export const memberLinks = [['home','/','Home'],['discover','/discover','Discover and request'],['history','/history','Watch history'],['wrapped','/wrapped','Wrapped'],['devices','/devices','Devices and sign-ins'],['account','/account','Account and security'],['preferences','/settings','My settings'],['status','/status','Status'],['help','/help','Help']];
+/** Shared member/admin shell. Pass a page fragment, navigation key and authenticated session;
+ * admin callers must enforce their own authorisation. shell.js provides navigation, CSRF and sign-out. */
+export function appShell({title,body,active,isAdmin,session,announcements=[],compare=false}: {compare?:boolean;title:string;body:ReturnType<typeof html>;active:string;isAdmin:boolean;session:SessionInfo;announcements?:{title:string;body:string}[]}) {
+ const links = (rows:string[][]) => rows.map(([key,url,label]) => html`<a class="nav" href="${url}" aria-current="${active===key?'page':'false'}" title="${label}"><svg class="i" aria-hidden="true" focusable="false"><use href="${"#"+navIcons[key]}"></use></svg><span>${label}</span>${["devices","users","invites"].includes(key)?html`<span class="ct num" data-nav-count="${key}"></span>`:""}</a>`);
+ const tabKeys=['home','discover','history','devices'];
+ const pageTitle=[...memberLinks,compareLink,['users','','Users'],['invites','','Invites'],['streams','','Live streams'],['announcements','','Announcements'],['audit','','Audit log'],['security','','Security'],['settings','','Settings']].find(r=>r[0]===active)?.[2]??'';
+ const tabs=tabKeys.map(k=>{const [,url,label]=memberLinks.find(r=>r[0]===k)!;return html`<a class="tab" href="${url}" aria-current="${active===k?'page':'false'}" aria-label="${label}"><svg class="i" aria-hidden="true" focusable="false"><use href="${"#"+navIcons[k]}"></use></svg><span>${({discover:'Discover',history:'History',devices:'Devices',home:'Home'} as Record<string,string>)[k]}</span></a>`;});
+ return layout({title,body:html`${iconSprite}<a class="skip" href="#content">Skip to content</a><header class="mobilebar">${brand}<span class="mb-title">${pageTitle}</span><button class="bell" type="button" data-bell aria-label="Notifications" aria-expanded="false" aria-controls="bell-panel"><svg class="i" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 004 0"/></svg><span class="bell-count" hidden></span></button></header><div class="bell-panel" id="bell-panel" role="dialog" aria-label="Notifications" hidden><div id="bell-list"></div></div><div class="app member-app"><aside class="side" id="sidebar"><div class="brand">${brand}<button class="side-toggle" id="side-toggle" type="button" aria-controls="sidebar" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"><svg class="i" aria-hidden="true" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3.5"/><path d="M9.5 4.5v15"/></svg></button></div><button class="btn mobile-close" id="nav-close">Close menu</button><nav aria-label="Main">${links(compare?[...memberLinks.slice(0,3),compareLink,...memberLinks.slice(3)]:memberLinks)}${isAdmin?html`<h2 class="grp">Admin</h2>${links(['users','invites','streams','announcements','audit','security','settings'].map(k=>[k,'/admin/'+k,({streams:'Live streams',audit:'Audit log'} as Record<string,string>)[k]||k[0].toUpperCase()+k.slice(1)]))}`:''}<button class="nav" type="button" data-signout title="Sign out"><svg class="i" aria-hidden="true" focusable="false"><use href="#out"></use></svg><span>Sign out</span></button></nav><div class="me"><span data-self-avatar class="avatar-slot" aria-hidden="true"><span class="avatar">${session.username.slice(0,2).toUpperCase()}</span></span><div class="identity"><span data-account-name>${session.username}</span><small class="muted">${isAdmin?"Administrator":"Member"}</small></div></div></aside><main class="main" id="content" tabindex="-1" data-page="${active}"><div id="announcements" aria-label="Announcements">${announcements.map(a=>html`<div class="banner"><div><b>${a.title}</b><p>${a.body}</p></div></div>`)}</div>${errorRegion}${statusRegion}<div class="page-content">${body}</div><noscript>Turn on JavaScript to load your details and use these controls.</noscript></main></div><nav class="tabbar" aria-label="Quick links">${tabs}<button class="tab${tabKeys.includes(active)?'':' on'}" type="button" id="nav-open" aria-controls="sidebar" aria-expanded="false"><svg class="i" aria-hidden="true" focusable="false"><use href="#menu"></use></svg><span>More</span></button></nav>${script('shell')}${script('tour')}${script('member')}`});
+}

@@ -1,0 +1,12 @@
+// This file exists only so the test suite can emulate the Cloudflare bindings the app code expects (D1, R2, email).
+// Jellypass is run with Docker (see docs/SELF-HOSTING.md); it is not deployed with Wrangler from this repository.
+{
+  "name": "jellypass",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": { "ENVIRONMENT": "beta", "MAIL_FROM": "jellypass@jellypass.example.com", "PUBLIC_URL": "https://jellypass.example.com" },
+  "send_email": [{ "name": "EMAIL" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "jellypass", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
+  "r2_buckets": [{ "binding": "TILES", "bucket_name": "jellypass-tiles" }]
+}

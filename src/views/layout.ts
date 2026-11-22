@@ -1,0 +1,15 @@
+import { html } from "hono/html";
+
+export const logo = html`<span class="mark" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M3 7h18v3.5a1.9 1.9 0 000 3.9V18H3v-3.6a1.9 1.9 0 000-3.9z"/><path d="M10.5 9.7l4 2.3-4 2.3z" fill="currentColor" stroke="none"/></svg></span>`;
+export const brand = html`<div class="brandline">${logo}<b>Jellypass</b></div>`;
+type Body = ReturnType<typeof html>;
+export function layout({ title, body, active }: { title: string; body: Body; active?: string }) {
+  return html`<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title} · Jellypass</title><meta name="robots" content="noindex,nofollow,noarchive"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon.ico" sizes="32x32" type="image/png"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="Jellypass"><link rel="stylesheet" href="/assets/app.css"><script src="/assets/theme.js"></script></head><body>${active ? html`<div class="app"><aside class="side">${brand}<nav aria-label="Main"><a class="nav" href="/" aria-current="${active === "home" ? "page" : "false"}">Home</a></nav></aside><main class="main">${body}</main></div>` : body}</body></html>`;
+}
+export const errorRegion = html`<p class="err notice" id="error" role="alert" aria-live="polite" tabindex="-1"></p>`;
+export const statusRegion = html`<p class="muted notice" id="status" role="status" aria-live="polite"></p>`;
+// Keep app-only enhancements attached to the shared shell script helper.
+export const script = (name: string) => html`<script type="module" src="${`/assets/${name}.js`}"></script>${name === 'shell' ? html`<script type="module" src="/assets/scroll.js"></script>` : ''}`;
+export const password = (id: string, label: string, fresh = false) => html`<div><label class="lab" for="${id}">${label}</label><div class="password"><input class="field" id="${id}" name="${id}" type="password" autocomplete="${fresh ? "new-password" : "current-password"}" minlength="${fresh ? "8" : "1"}" required aria-describedby="${fresh ? `${id}-hint` : undefined}"><button type="button" class="btn" data-password="${id}" aria-label="${`Show ${label.toLowerCase()}`}">Show</button></div>${fresh ? html`<p class="muted" id="${`${id}-hint`}" aria-live="polite">At least 8 characters. A long phrase works well.</p>` : ""}</div>`;
+export const codeField = (id: string) => html`<div><label class="lab" for="${id}">6-digit code</label><input class="field" id="${id}" name="${id}" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required></div>`;
+export const turnstile = (sitekey?: string) => html`<div class="cf-turnstile" data-sitekey="${sitekey ?? ""}" data-size="flexible"></div><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>`;

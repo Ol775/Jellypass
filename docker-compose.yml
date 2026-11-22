@@ -1,0 +1,51 @@
+# Jellypass, self-hosted. Paste into a Portainer stack (Stacks > Add stack > Web editor)
+# No variables are needed: open the site on first run and a setup page asks for Jellyfin, Seerr and Tracearr.
+# Variables are only starting values: anything saved in the app (Settings, Sign-in and email) wins.
+services:
+  jellypass:
+    image: ${JELLYPASS_IMAGE:-ghcr.io/ol775/jellypass:latest}
+    # To build from a checkout instead of pulling: uncomment, and run `docker compose up -d --build`.
+    # build: .
+    container_name: jellypass
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDR:-0.0.0.0}:${PORT:-8787}:8787"   # set BIND_ADDR=127.0.0.1 if the proxy runs on this host; put a TLS reverse proxy (Caddy, Nginx Proxy Manager, Traefik) in front of this
+    volumes:
+      - jellypass-data:/data   # SQLite database; map tiles and GeoIP files go in /data/tiles
+    environment:
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      JELLYFIN_URL: ${JELLYFIN_URL:-}
+      JELLYFIN_ADMIN_KEY: ${JELLYFIN_ADMIN_KEY:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      TLS_MODE: ${TLS_MODE:-}        # empty = plain http (behind a proxy/tunnel); self-signed = built-in https; custom = your cert in /data/tls
+      TLS_HOSTS: ${TLS_HOSTS:-}      # extra names/IPs for the self-signed certificate, e.g. 192.168.1.10,jellypass.lan
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      TURNSTILE_SITEKEY: ${TURNSTILE_SITEKEY:-}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+      SEERR_URL: ${SEERR_URL:-}
+      SEERR_API_KEY: ${SEERR_API_KEY:-}
+      TRACEARR_URL: ${TRACEARR_URL:-}
+      TRACEARR_TOKEN: ${TRACEARR_TOKEN:-}
+      KEYS_SECRET: ${KEYS_SECRET:-}
+      VAPID_KEYS: ${VAPID_KEYS:-}
+      MAIL_FROM: ${MAIL_FROM:-jellypass@localhost}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+
+  # Optional Cloudflare Tunnel. Turn it on with COMPOSE_PROFILES=tunnel and a TUNNEL_TOKEN from Cloudflare Zero Trust
+  # (Networks, Tunnels). Point the tunnel's public hostname at http://jellypass:8787, set PUBLIC_URL to that https
+  # address and TRUST_PROXY=true. With a tunnel you can remove the ports: section above so nothing is exposed on the LAN.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on: [jellypass]
+
+volumes:
+  jellypass-data:

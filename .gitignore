@@ -1,0 +1,11 @@
+.dev.vars
+.DS_Store
+.superpowers
+.vitest
+.wrangler
+*.mmdb
+*.pmtiles
+backups
+dist
+node_modules
+.env
