@@ -226,3 +226,10 @@ describe("version and updates", () => {
     expect(local.saved.at(-1)).toEqual({ updateCheck: false });
   });
 });
+
+test("the sign-in page hides the emailed-link option when email is off (and keeps it when on)", async () => {
+  const page = async (extra: Record<string, string>) => (await (await createApp({}).request("/signin", {}, { ...env, ...extra } as unknown as Env)).text());
+  const hiddenOpen = /<button[^>]*id="magic-open"[^>]*\shidden[\s>]/;
+  expect(await page({ EMAIL_OFF: "true" })).toMatch(hiddenOpen);
+  expect(await page({})).not.toMatch(hiddenOpen);
+});
