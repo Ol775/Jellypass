@@ -4,7 +4,7 @@ Jellypass runs as one container with a SQLite database in a volume. You need a J
 
 ## Quick start (Docker Compose or Portainer)
 
-1. Use the `docker-compose.yml` from this repository. In Portainer: Stacks, Add stack, paste it into the web editor. The default image is `ghcr.io/ol775/jellypass:latest`; to build it yourself instead, run `docker build -t jellypass .` and set `JELLYPASS_IMAGE=jellypass`.
+1. Use the `docker-compose.yml` from this repository. In Portainer: Stacks, Add stack, paste it into the web editor. The default image is `ghcr.io/ol775/jelly-pass:latest`; to build it yourself instead, run `docker build -t jellypass .` and set `JELLYPASS_IMAGE=jellypass`.
 2. Deploy. No variables are needed: everything is asked for on first run. (`.env.example` lists the optional starting values.)
 3. Open `http://<your-server>:8787`. The setup wizard asks for Jellyfin (required), Seerr and Tracearr (optional), and tests each connection before saving.
 4. Sign in with a Jellyfin administrator account. The rest of the setup is under **Settings**.

@@ -3,7 +3,7 @@
 # Variables are only starting values: anything saved in the app (Settings, Sign-in and email) wins.
 services:
   jellypass:
-    image: ${JELLYPASS_IMAGE:-ghcr.io/ol775/jellypass:latest}
+    image: ${JELLYPASS_IMAGE:-ghcr.io/ol775/jelly-pass:latest}
     # To build from a checkout instead of pulling: uncomment, and run `docker compose up -d --build`.
     # build: .
     container_name: jellypass

@@ -7,6 +7,7 @@ RUN npx esbuild selfhost/server.ts --define:__VERSION__="\"$(node -p "require('.
     --loader:.sql=text --outfile=dist/server.mjs --banner:js="import{createRequire}from'module';const require=createRequire(import.meta.url);"
 
 FROM node:24-alpine
+LABEL org.opencontainers.image.source="https://github.com/Ol775/Jellypass" org.opencontainers.image.description="Jellypass: a members portal for a private Jellyfin library" org.opencontainers.image.licenses="MIT"
 ENV NODE_ENV=production DATA_DIR=/data MIGRATIONS_DIR=/app/migrations
 RUN apk add --no-cache openssl
 WORKDIR /app
