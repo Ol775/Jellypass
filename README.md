@@ -140,6 +140,20 @@ The full walkthrough (getting the Jellyfin key, the setup wizard step by step, y
 - [Contributing](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Changelog](CHANGELOG.md)
 
+## Roadmap
+
+[![Jellypass roadmap in three columns: Shipped, Up next and Later](docs/images/roadmap.png)](ROADMAP.md)
+
+**Up next:**
+
+- Detect Jellyfin, Seerr and Tracearr on your network
+- Scheduled automatic backups
+- Backup to S3-compatible storage
+- Optional lock on first-run setup
+- Encrypt saved API keys at rest
+
+See the [full roadmap](ROADMAP.md) for what has shipped, the reasons behind each item and the wish list. Vote with a 👍 on an issue, or open a [feature request](https://github.com/Ol775/Jellypass/issues/new?template=feature_request.yml).
+
 ## Status
 
 Jellypass has run a family Jellyfin library daily since 2026. The self-hosted version is new in 1.0.0, so expect rough edges; issues and pull requests are welcome. See the [changelog](CHANGELOG.md).
