@@ -1,4 +1,4 @@
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -6,7 +6,7 @@ COPY . .
 RUN npx esbuild selfhost/server.ts --define:__VERSION__="\"$(node -p "require('./package.json').version")\"" --bundle --platform=node --format=esm --target=node24 \
     --loader:.sql=text --outfile=dist/server.mjs --banner:js="import{createRequire}from'module';const require=createRequire(import.meta.url);"
 
-FROM node:24-alpine
+FROM node:26-alpine
 LABEL org.opencontainers.image.source="https://github.com/Ol775/Jellypass" org.opencontainers.image.description="Jellypass: a members portal for a private Jellyfin library" org.opencontainers.image.licenses="MIT"
 ENV NODE_ENV=production DATA_DIR=/data MIGRATIONS_DIR=/app/migrations
 RUN apk add --no-cache openssl
