@@ -2,6 +2,16 @@
 
 All notable changes to Jellypass are listed here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com), and versions follow [Semantic Versioning](https://semver.org).
 
+## [1.0.1] - 2026-11-22
+
+### Added
+- A full install guide (`docs/INSTALL.md`) and a troubleshooting guide (`docs/TROUBLESHOOTING.md`).
+
+### Fixed
+- The Docker health check reported "unhealthy" when HTTPS was switched on from the settings page. It now tries HTTPS, then HTTP.
+- When the data folder is not writable, the app now says so in plain English and how to fix it, instead of only `unable to open database file`.
+- The backup instructions used the `sqlite3` tool, which is not in the image. They now use a command that is, and the restore steps are written out and tested.
+
 ## [1.0.0] - 2026-11-22
 
 First public release of the self-hosted version.

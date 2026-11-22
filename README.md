@@ -128,7 +128,14 @@ docker run -d --name jellypass --restart unless-stopped \
   ghcr.io/ol775/jelly-pass:latest
 ```
 
-HTTPS, a Cloudflare Tunnel, email and everything else you can change afterwards are covered in [docs/SELF-HOSTING.md](docs/SELF-HOSTING.md).
+The full walkthrough (getting the Jellyfin key, the setup wizard step by step, your first invite, updating, backup and restore) is in the **[install guide](docs/INSTALL.md)**. If something does not work, see **[troubleshooting](docs/TROUBLESHOOTING.md)**. HTTPS, a Cloudflare Tunnel, email and everything else you can change afterwards is in [docs/SELF-HOSTING.md](docs/SELF-HOSTING.md).
+
+## Documentation
+
+- [Install guide](docs/INSTALL.md): from nothing to your first invited member
+- [Troubleshooting](docs/TROUBLESHOOTING.md): symptoms, causes and fixes, with the exact error messages
+- [Self-hosting reference](docs/SELF-HOSTING.md): HTTPS options, Cloudflare Tunnel, email, every environment variable
+- [Changelog](CHANGELOG.md)
 
 ## Status
 

@@ -24,7 +24,12 @@ const DATA = e.DATA_DIR ?? "/data";
 const PORT = Number(e.PORT ?? 8787);
 
 // ---- D1 -> SQLite (only the surface the app uses: prepare/bind/run/first/all, meta.changes/last_row_id)
-const sqlite = new DatabaseSync(join(DATA, "jellypass.db"));
+let sqlite: DatabaseSync;
+try { sqlite = new DatabaseSync(join(DATA, "jellypass.db")); }
+catch (err) {
+  console.error(`Cannot open the database in ${DATA}: ${(err as Error).message}\nThe container runs as user 1000 (node). If ${DATA} is a folder from your server, make it writable with: chown -R 1000:1000 <that folder>. A Docker named volume needs nothing.`);
+  process.exit(1);
+}
 sqlite.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
 
 function migrate(dir: string) {

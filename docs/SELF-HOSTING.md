@@ -1,5 +1,7 @@
 # Self-hosting with Docker
 
+Step-by-step: [INSTALL.md](INSTALL.md). Problems: [TROUBLESHOOTING.md](TROUBLESHOOTING.md). This page is the reference for everything you can configure.
+
 Jellypass runs as one container with a SQLite database in a volume. You need a Jellyfin server and its admin API key; Seerr and Tracearr are optional.
 
 ## Quick start
@@ -54,7 +56,7 @@ To update: in Portainer open the stack and choose **Pull and redeploy**; with Do
 
 ## Data and backups
 
-Everything is in the `jellypass-data` volume: `jellypass.db` (SQLite, WAL mode), `config.json` (your saved settings, including keys, readable only by the container user) and `tls/`. Back up with `sqlite3 /data/jellypass.db ".backup /data/backup.db"` and copy `config.json`, or copy the whole volume while the container is stopped.
+Everything is in the `jellypass-data` volume: `jellypass.db` (SQLite, WAL mode), `config.json` (your saved settings, including keys, readable only by the container user) and `tls/`. The database file cannot be copied safely while Jellypass is writing to it, so use the backup command in [INSTALL.md](INSTALL.md#backup-and-restore), which makes a consistent copy while it runs, along with the restore steps. (The container does not include the `sqlite3` command line tool.)
 
 ## Optional: maps and approximate locations
 

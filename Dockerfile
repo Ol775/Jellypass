@@ -18,5 +18,5 @@ RUN mkdir /data && chown node /data
 USER node
 VOLUME /data
 EXPOSE 8787
-HEALTHCHECK --interval=30s --timeout=5s CMD node -e "process.env.NODE_TLS_REJECT_UNAUTHORIZED='0';fetch((process.env.TLS_MODE?'https':'http')+'://127.0.0.1:8787/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=5s CMD node -e "process.env.NODE_TLS_REJECT_UNAUTHORIZED='0';const u='127.0.0.1:8787/health';fetch('https://'+u).catch(()=>fetch('http://'+u)).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
 CMD ["node", "--disable-warning=ExperimentalWarning", "server.mjs"]
