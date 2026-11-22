@@ -116,3 +116,21 @@ describe("admin digest", () => {
     expect(sent).toEqual([{ to: "me@example.com", subject: "Jellypass daily security digest" }]);
   });
 });
+
+describe("request-ready links", () => {
+  const ready = async (extra: Record<string, string>) => {
+    requests = [{ id: 1, media: { status: 5, mediaType: "movie", tmdbId: 1, updatedAt: new Date().toISOString() } }];
+    const bodies: string[] = [];
+    const m = { send: async (_to: string, _s: string, html: string, text: string) => void bodies.push(html + text) };
+    await readyRequests({ ...d(), env: { ...env, JELLYFIN_URL: "http://192.168.1.10:8096", ...extra } as never, mailer: m });
+    return bodies.join("\n");
+  };
+  test("the email links to Jellyfin at the public address when one is set", async () => {
+    const out = await ready({ JELLYFIN_PUBLIC_URL: "https://watch.example.com" });
+    expect(out).toContain("https://watch.example.com/web/#/details?id=");
+    expect(out).not.toContain("192.168.1.10");
+  });
+  test("and at the connection address when none is set", async () => {
+    expect(await ready({})).toContain("http://192.168.1.10:8096/web/#/details?id=");
+  });
+});

@@ -89,7 +89,7 @@ const save = () => writeFileSync(CONFIG, JSON.stringify(saved, null, 2), { mode:
 const conf = (k: string) => (k in saved ? saved[k] : e[k]) || "";
 if (!conf("SESSION_SECRET")) { saved.SESSION_SECRET = randomBytes(32).toString("hex"); save(); }
 
-const KEYS_ = ["JELLYFIN_URL", "JELLYFIN_ADMIN_KEY", "SEERR_URL", "SEERR_API_KEY", "TRACEARR_URL", "TRACEARR_TOKEN", "CF_ACCESS_CLIENT_ID", "CF_ACCESS_CLIENT_SECRET", "SESSION_SECRET", "PUBLIC_URL"] as const;
+const KEYS_ = ["JELLYFIN_URL", "JELLYFIN_PUBLIC_URL", "SEERR_PUBLIC_URL", "JELLYFIN_ADMIN_KEY", "SEERR_URL", "SEERR_API_KEY", "TRACEARR_URL", "TRACEARR_TOKEN", "CF_ACCESS_CLIENT_ID", "CF_ACCESS_CLIENT_SECRET", "SESSION_SECRET", "PUBLIC_URL"] as const;
 const env: Record<string, unknown> = {
   DB, TILES, EMAIL, LOCAL: undefined as unknown,
   ENVIRONMENT: e.ENVIRONMENT ?? "prod", MAIL_FROM: e.MAIL_FROM ?? "jellypass@localhost",
@@ -113,9 +113,9 @@ function applyConfig() {
 }
 env.LOCAL = {
   async get() {
-    const conn = (u: string, k: string) => ({ url: String(env[u] ?? ""), keySet: !!env[k] });
+    const conn = (u: string, k: string, pub?: string) => ({ url: String(env[u] ?? ""), keySet: !!env[k], ...(pub ? { publicUrl: String(env[pub] ?? "") } : {}) });
     const network = { publicUrl: conf("PUBLIC_URL"), tlsMode: netVal("TLS_MODE"), tlsHosts: netVal("TLS_HOSTS"), trustProxy, https: !!tls, port: PORT, restarting: relistenPending, cert: certInfo() };
-    return { network, emailEnabled: eff("EMAIL_ENABLED") !== "false", connections: { jellyfin: conn("JELLYFIN_URL", "JELLYFIN_ADMIN_KEY"), seerr: conn("SEERR_URL", "SEERR_API_KEY"), tracearr: conn("TRACEARR_URL", "TRACEARR_TOKEN") }, turnstile: { siteKey: eff("TURNSTILE_SITEKEY"), secretSet: !!eff("TURNSTILE_SECRET") },
+    return { network, emailEnabled: eff("EMAIL_ENABLED") !== "false", connections: { jellyfin: conn("JELLYFIN_URL", "JELLYFIN_ADMIN_KEY", "JELLYFIN_PUBLIC_URL"), seerr: conn("SEERR_URL", "SEERR_API_KEY", "SEERR_PUBLIC_URL"), tracearr: conn("TRACEARR_URL", "TRACEARR_TOKEN") }, turnstile: { siteKey: eff("TURNSTILE_SITEKEY"), secretSet: !!eff("TURNSTILE_SECRET") },
       smtp: { host: eff("SMTP_HOST"), port: Number(eff("SMTP_PORT") || 587), secure: eff("SMTP_SECURE") === "true", user: eff("SMTP_USER"), from: eff("MAIL_FROM"), passSet: !!eff("SMTP_PASS") } };
   },
   async set(p: any) {
@@ -125,8 +125,8 @@ env.LOCAL = {
     if (p.updateCheck !== undefined) { put("UPDATE_CHECK", p.updateCheck); if (p.updateCheck) void checkUpdates(); }
     put("TURNSTILE_SITEKEY", p.turnstile?.siteKey); put("TURNSTILE_SECRET", p.turnstile?.secret);
     put("SMTP_HOST", p.smtp?.host); put("SMTP_PORT", p.smtp?.port); put("SMTP_SECURE", p.smtp?.secure); put("SMTP_USER", p.smtp?.user); put("SMTP_PASS", p.smtp?.pass); put("MAIL_FROM", p.smtp?.from);
-    const F = { jellyfin: ["JELLYFIN_URL", "JELLYFIN_ADMIN_KEY"], seerr: ["SEERR_URL", "SEERR_API_KEY"], tracearr: ["TRACEARR_URL", "TRACEARR_TOKEN"] } as const;
-    for (const [svc, v] of Object.entries(p.connections ?? {}) as Array<[keyof typeof F, any]>) { put(F[svc][0], v.url); put(F[svc][1], v.key); }
+    const F = { jellyfin: ["JELLYFIN_URL", "JELLYFIN_ADMIN_KEY", "JELLYFIN_PUBLIC_URL"], seerr: ["SEERR_URL", "SEERR_API_KEY", "SEERR_PUBLIC_URL"], tracearr: ["TRACEARR_URL", "TRACEARR_TOKEN", undefined] } as const;
+    for (const [svc, v] of Object.entries(p.connections ?? {}) as Array<[keyof typeof F, any]>) { put(F[svc][0], v.url); put(F[svc][1], v.key); if (F[svc][2]) put(F[svc][2]!, v.publicUrl); }
     save(); applyConfig();
   },
   async certificate() { return tls ? tls.cert.toString() : null; },
@@ -320,6 +320,11 @@ async function setup(req: Request): Promise<Response> {
     const next: Record<string, string> = {};
     for (const [k, v] of [["PUBLIC_URL", b.publicUrl], ["JELLYFIN_URL", b.jellyfin?.url], ["SEERR_URL", b.seerr?.url], ["TRACEARR_URL", b.tracearr?.url]] as const) {
       const x = cleanUrl(v); if (x === null || (!x && k !== "SEERR_URL" && k !== "TRACEARR_URL")) return json({ error: `Check the ${k.replace("_URL", "").toLowerCase()} address.` }, 400); next[k] = x;
+    }
+    for (const [k, v] of [["JELLYFIN_PUBLIC_URL", b.jellyfin?.publicUrl], ["SEERR_PUBLIC_URL", b.seerr?.publicUrl]] as const) {
+      const t = String(v ?? "").trim(); if (!t) { next[k] = ""; continue; }
+      const full = /^[a-z][a-z0-9+.-]*:\/\//i.test(t) ? t : `https://${t}`; // the address members use is public, so a bare name means https
+      const x = cleanUrl(full); if (!x) return json({ error: `Check the address members use for ${k.startsWith("JELLYFIN") ? "Jellyfin" : "Seerr"}.` }, 400); next[k] = x;
     }
     next.JELLYFIN_ADMIN_KEY = String(b.jellyfin?.key ?? "").trim(); next.SEERR_API_KEY = next.SEERR_URL ? String(b.seerr?.key ?? "").trim() : ""; next.TRACEARR_TOKEN = next.TRACEARR_URL ? String(b.tracearr?.key ?? "").trim() : "";
     if (!next.JELLYFIN_ADMIN_KEY) return json({ error: "The Jellyfin key is missing." }, 400);

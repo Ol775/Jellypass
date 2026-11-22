@@ -94,8 +94,8 @@ The first time you open the site you get a six-step wizard. Each connection is t
 | Step | What to enter |
 | --- | --- |
 | **1. Welcome** | Nothing. Press Continue |
-| **2. Jellyfin** (required) | The **address** of your Jellyfin server and the **API key** from above. The address has to work *from inside the container*: use the server's LAN address, such as `192.168.1.10:8096`, or the Jellyfin container's name if it shares a Docker network. **`localhost` does not work**, because inside the container that means Jellypass itself. If you leave off `http://`, it is added. When Jellyfin connects, the background fills with posters from your library |
-| **3. Seerr** (optional) | Its address and API key, or **Skip** |
+| **2. Jellyfin** (required) | The **address** of your Jellyfin server and the **API key** from above. The address has to work *from inside the container*: use the server's LAN address, such as `192.168.1.10:8096`, or the Jellyfin container's name if it shares a Docker network. **`localhost` does not work**, because inside the container that means Jellypass itself. If you leave off `http://`, it is added. When Jellyfin connects, the background fills with posters from your library. There is also an optional **Address members use**: fill it in only if members connect to Jellyfin by a different address than Jellypass does, for example `watch.example.com` from outside your home network (see below) |
+| **3. Seerr** (optional) | Its address and API key, and optionally the address members use for it, or **Skip** |
 | **4. Tracearr** (optional) | Its address and token, or **Skip** |
 | **5. Your address** | The web address members will open, for example `https://jellypass.example.com`. It is used in emails and invite links. It is pre-filled from your browser; change it if you will put Jellypass behind a proxy or tunnel |
 | **6. Review** | Check the summary and press **Finish setup**. Nothing is changed in Jellyfin |
@@ -125,7 +125,11 @@ Edit them or add your own. Changing a level does not change existing members unt
 1. Open **Invites** and create one: choose an access level, how many people may use it (1 to 100) and when it expires (1 to 90 days). You can also enter email addresses to send invites directly (email is optional, see below). Without email, copy the link.
 2. Send the link. The member opens it, chooses a username and password, and Jellypass creates their Jellyfin account with that access level. A short guide helps them set up their phone or TV app.
 
-### 4. Make it reachable and safe
+### 4. If members connect from outside your network
+
+Jellypass reaches Jellyfin by the address you gave it, which often only works inside your home network (`192.168.1.10:8096`). Members' browsers also use a Jellyfin address: for poster images, the "Open in Jellyfin" links, the app set-up guide that tells them which server to type, and the links in "request ready" emails and notifications. If members connect from outside, or by a different name, set **Address members use** on the Jellyfin card in Settings, Connections (for example `watch.example.com`). The Seerr card has the same field for the "Open Seerr" buttons. Leave them blank to use the connection addresses, which is right when those are already public.
+
+### 5. Make it reachable and safe
 
 - **HTTPS.** Plain HTTP is fine for a trial on your home network, but the sign-in cookie is only marked secure over HTTPS, and passkeys need it. Settings, **Server**, has Address and HTTPS: use a Cloudflare Tunnel or reverse proxy, or turn on the built-in self-signed or custom certificate. See the HTTPS table in [SELF-HOSTING.md](SELF-HOSTING.md#https-pick-one).
 - **Sign-in challenge.** Settings, Server, can add Cloudflare Turnstile to the sign-in page to stop bots guessing passwords. It needs a real domain name.

@@ -175,6 +175,10 @@ A rejected certificate changes nothing, so the site keeps working while you fix 
 
 They are built from the **Public address**. Set it to the address members actually use (Settings, Server).
 
+### Posters, "Open in Jellyfin" links or the set-up guide are broken for members outside my network
+
+Members' browsers are being given the address Jellypass uses to reach Jellyfin, which probably only works inside your network (for example `192.168.1.10:8096`). Set **Address members use** on the Jellyfin card in Settings, Connections to the address they connect by (for example `watch.example.com`); the Seerr card has the same field for the "Open Seerr" buttons. It applies at once. Before version 1.0.2 this setting did not exist; the workaround was to give Jellypass the public address as its connection address, if the server could reach it.
+
 ### Every member appears to come from the same IP
 
 You are behind a proxy and **Trust the proxy** is off. Turn it on in Settings, Server, Address and HTTPS, but only if the proxy is the only way to reach Jellypass (bind with `BIND_ADDR=127.0.0.1` or use a private Docker network). Otherwise anyone could fake their address.

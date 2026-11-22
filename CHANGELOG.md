@@ -2,6 +2,14 @@
 
 All notable changes to Jellypass are listed here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com), and versions follow [Semantic Versioning](https://semver.org).
 
+## [1.0.2] - 2026-11-22
+
+### Added
+- An optional **Address members use** for Jellyfin and Seerr, in Settings, Connections and in the setup wizard. Use it when Jellypass reaches Jellyfin by an address that only works inside your network (such as `192.168.1.10:8096`) but members connect by another (such as `watch.example.com`). A bare name means https.
+
+### Fixed
+- Members were given the address Jellypass uses to reach Jellyfin, even when that only works inside your network, so poster images, "Open in Jellyfin" links and the app set-up guide were broken for anyone outside it. The same address was used in "request ready" emails and push notifications. All of these now use the address members use, and fall back to the connection address when none is set. The "Open Seerr" buttons work the same way.
+
 ## [1.0.1] - 2026-11-22
 
 ### Added

@@ -16,6 +16,9 @@ const cleanUrl = (x: unknown) => { let t = String(x ?? "").trim(); if (t && !/^[
 /** The site's own address as an origin (no path). A bare name means https. */
 const originOf = (x: unknown) => { let t = String(x ?? "").trim(); if (t && !/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) t = `https://${t}`; try { const u = new URL(t); return /^https?:$/.test(u.protocol) && u.hostname ? u.origin : null; } catch { return null; } };
 const HOSTNAME = /^[A-Za-z0-9.:\[\]-]{1,253}$/;
+/** The address members use: a bare name means https (it is public), a path is kept (Jellyfin may live under one), a trailing slash goes. */
+const publicUrlOf = (x: unknown) => { const t0 = String(x ?? "").trim(); let t = t0; if (t && !/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) t = `https://${t}`; try { const u = new URL(t); return /^https?:$/.test(u.protocol) && u.hostname ? t.replace(/\/+$/, "") : null; } catch { return null; } };
+
 const SITEKEY = /^[0-9A-Za-z_-]{10,100}$/, HOST = /^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$/, EMAIL = /^[^\s@<>"]{1,64}@[^\s@<>"]{1,255}$/;
 
 selfhostRoutes.get("/api/admin/selfhost", async (c) => c.json(await c.env.LOCAL!.get()));
@@ -103,27 +106,36 @@ selfhostRoutes.put("/api/admin/selfhost/connection/:service", async (c) => {
   if (url === null) return c.json({ error: "That does not look like an address. Use something like 192.168.1.10:8096 or https://jellyfin.example.com." }, 400);
   const key = b.key === undefined || b.key === "" ? undefined : typeof b.key === "string" && b.key.trim().length <= 500 ? b.key.trim() : null;
   if (key === null) return c.json({ error: "The key is too long." }, 400);
-  if (url === undefined && key === undefined) return c.json({ error: "Nothing to change." }, 400);
-  const nextUrl = url ?? cur.connections[name].url;
-  if (!nextUrl) return c.json({ error: "Enter the address." }, 400);
-  if (key === undefined && !cur.connections[name].keySet) return c.json({ error: "Enter the key too." }, 400);
-  // Test the new address with the new key, or with the key already stored when only the address changes.
-  const candidate = { ...c.env, [urlField]: nextUrl, ...(key !== undefined ? { [keyField]: key } : {}) } as Env;
-  const check = await c.var.testIntegration(name, candidate);
-  if (!check.ok) {
-    const canForce = b.force === true && !check.rejected && name !== "jellyfin"; // Jellyfin must always be proven; a refused key is simply wrong
-    if (!canForce) return c.json({ error: check.rejected ? "The service refused that key." : `Could not reach it (${check.error}). Check the address; it must work from inside the container.` }, 422);
+  // The address members use is optional, only for Jellyfin and Seerr, and cannot be tested from here (it is meant for members' browsers).
+  const pub = b.publicUrl === undefined ? undefined : b.publicUrl === "" ? "" : publicUrlOf(b.publicUrl);
+  if (pub === null) return c.json({ error: "That does not look like an address. Use something like watch.example.com or https://watch.example.com." }, 400);
+  if (pub !== undefined && name === "tracearr") return c.json({ error: "Tracearr is only used by admins, so it has no separate address for members." }, 400);
+  const changesConnection = url !== undefined || key !== undefined;
+  if (!changesConnection && pub === undefined) return c.json({ error: "Nothing to change." }, 400);
+  let verified: boolean | undefined;
+  if (changesConnection) {
+    const nextUrl = url ?? cur.connections[name].url;
+    if (!nextUrl) return c.json({ error: "Enter the address." }, 400);
+    if (key === undefined && !cur.connections[name].keySet) return c.json({ error: "Enter the key too." }, 400);
+    // Test the new address with the new key, or with the key already stored when only the address changes.
+    const candidate = { ...c.env, [urlField]: nextUrl, ...(key !== undefined ? { [keyField]: key } : {}) } as Env;
+    const check = await c.var.testIntegration(name, candidate);
+    if (!check.ok) {
+      const canForce = b.force === true && !check.rejected && name !== "jellyfin"; // Jellyfin must always be proven; a refused key is simply wrong
+      if (!canForce) return c.json({ error: check.rejected ? "The service refused that key." : `Could not reach it (${check.error}). Check the address; it must work from inside the container.` }, 422);
+    }
+    verified = check.ok;
   }
-  await c.env.LOCAL!.set({ connections: { [name]: { ...(url !== undefined ? { url } : {}), ...(key !== undefined ? { key } : {}) } } });
-  await audit(c.env.DB, c.get("session").username, "selfhost.connection", name, { url: url !== undefined, key: key !== undefined, verified: check.ok }); // never the values
-  return c.json({ ok: true, verified: check.ok, ...(await c.env.LOCAL!.get()) });
+  await c.env.LOCAL!.set({ connections: { [name]: { ...(url !== undefined ? { url } : {}), ...(key !== undefined ? { key } : {}), ...(pub !== undefined ? { publicUrl: pub } : {}) } } });
+  await audit(c.env.DB, c.get("session").username, "selfhost.connection", name, { url: url !== undefined, key: key !== undefined, publicUrl: pub !== undefined, verified: verified ?? null }); // never the values
+  return c.json({ ok: true, verified: verified ?? null, ...(await c.env.LOCAL!.get()) });
 });
 
 /** Seerr and Tracearr are optional: removing one clears its address and key. Jellyfin cannot be removed. */
 selfhostRoutes.delete("/api/admin/selfhost/connection/:service", async (c) => {
   const name = c.req.param("service");
   if (!isService(name) || name === "jellyfin") return c.json({ error: "Jellyfin cannot be removed." }, 400);
-  await c.env.LOCAL!.set({ connections: { [name]: { url: "", key: null } } });
+  await c.env.LOCAL!.set({ connections: { [name]: { url: "", key: null, ...(name === "seerr" ? { publicUrl: "" } : {}) } } });
   await audit(c.env.DB, c.get("session").username, "selfhost.connection_remove", name);
   return c.json({ ok: true, ...(await c.env.LOCAL!.get()) });
 });

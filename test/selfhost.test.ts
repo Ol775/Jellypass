@@ -23,7 +23,7 @@ function localStore(): LocalConfig & { saved: LocalPatch[]; setNetError(m: strin
   let netErr: string | null = null;
   let checks = 0;
   const about = () => ({ version: "1.0.0", repo: "x/y", updateCheck: true, latest: { version: "1.1.0", url: "https://github.com/x/y/releases/tag/v1.1.0", notes: "Fixes", publishedAt: null }, updateAvailable: true, checkedAt: null, error: null, changelog: [{ version: "1.0.0", date: "2026-11-22", body: "First release" }] });
-  return { saved, setNetError(m: string | null) { netErr = m; }, async about() { return about(); }, async checkUpdates() { checks++; return { ...about(), checkedAt: `check-${checks}` }; }, async certificate() { return st.network.https ? "-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----\n" : null; }, async get() { return st; }, async set(p) { if (p.network && netErr) throw new Error(netErr); saved.push(p); if (p.network?.tlsMode !== undefined) { st.network.tlsMode = p.network.tlsMode; st.network.https = !!p.network.tlsMode; } if (p.network?.publicUrl) st.network.publicUrl = p.network.publicUrl; if (p.turnstile?.siteKey !== undefined) st.turnstile.siteKey = p.turnstile.siteKey; if (p.turnstile?.secret !== undefined) st.turnstile.secretSet = !!p.turnstile.secret; for (const [k, v] of Object.entries(p.connections ?? {})) { if (v.url !== undefined) st.connections[k as keyof typeof st.connections].url = v.url; if (v.key !== undefined) st.connections[k as keyof typeof st.connections].keySet = !!v.key; }
+  return { saved, setNetError(m: string | null) { netErr = m; }, async about() { return about(); }, async checkUpdates() { checks++; return { ...about(), checkedAt: `check-${checks}` }; }, async certificate() { return st.network.https ? "-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----\n" : null; }, async get() { return st; }, async set(p) { if (p.network && netErr) throw new Error(netErr); saved.push(p); if (p.network?.tlsMode !== undefined) { st.network.tlsMode = p.network.tlsMode; st.network.https = !!p.network.tlsMode; } if (p.network?.publicUrl) st.network.publicUrl = p.network.publicUrl; if (p.turnstile?.siteKey !== undefined) st.turnstile.siteKey = p.turnstile.siteKey; if (p.turnstile?.secret !== undefined) st.turnstile.secretSet = !!p.turnstile.secret; for (const [k, v] of Object.entries(p.connections ?? {})) { if (v.url !== undefined) st.connections[k as keyof typeof st.connections].url = v.url; if (v.key !== undefined) st.connections[k as keyof typeof st.connections].keySet = !!v.key; if (v.publicUrl !== undefined) st.connections[k as keyof typeof st.connections].publicUrl = v.publicUrl; }
     if (p.smtp?.host !== undefined) st.smtp.host = p.smtp.host; if (p.smtp?.pass !== undefined) st.smtp.passSet = !!p.smtp.pass; } };
 }
 let local: ReturnType<typeof localStore>;
@@ -232,4 +232,43 @@ test("the sign-in page hides the emailed-link option when email is off (and keep
   const hiddenOpen = /<button[^>]*id="magic-open"[^>]*\shidden[\s>]/;
   expect(await page({ EMAIL_OFF: "true" })).toMatch(hiddenOpen);
   expect(await page({})).not.toMatch(hiddenOpen);
+});
+
+describe("the address members use", () => {
+  const put = (a: any, svc: string, body: unknown) => app.request(`/api/admin/selfhost/connection/${svc}`, j("PUT", body, a), e());
+  test("can be set on its own: saved without contacting the service, a bare name becomes https, a path is kept", async () => {
+    const a = await login("olivia", e());
+    tested = {};
+    const r = await put(a, "jellyfin", { publicUrl: "watch.example.com/jellyfin/" });
+    expect(r.status).toBe(200);
+    expect(tested).toEqual({});                                   // nothing was tested: it is for members' browsers, not for the server
+    expect(local.saved.at(-1)).toEqual({ connections: { jellyfin: { publicUrl: "https://watch.example.com/jellyfin" } } });
+    expect(((await r.json()) as any).verified).toBeNull();
+  });
+  test("can be changed together with the connection, which is still tested", async () => {
+    const a = await login("olivia", e());
+    expect((await put(a, "seerr", { url: "192.168.1.5:5055", key: "k", publicUrl: "http://requests.lan" })).status).toBe(200);
+    expect(tested).toMatchObject({ n: "seerr", SEERR_URL: "http://192.168.1.5:5055" });
+    expect(local.saved.at(-1)).toEqual({ connections: { seerr: { url: "http://192.168.1.5:5055", key: "k", publicUrl: "http://requests.lan" } } });
+  });
+  test("an empty value clears it; bad values are refused; Tracearr has none", async () => {
+    const a = await login("olivia", e());
+    expect((await put(a, "jellyfin", { publicUrl: "" })).status).toBe(200);
+    expect(local.saved.at(-1)).toEqual({ connections: { jellyfin: { publicUrl: "" } } });
+    expect((await put(a, "jellyfin", { publicUrl: "ftp://nope" })).status).toBe(400);
+    expect((await put(a, "tracearr", { publicUrl: "tr.example.com" })).status).toBe(400);
+    expect((await put(a, "jellyfin", {})).status).toBe(400);      // still "nothing to change"
+  });
+  test("removing Seerr clears its public address too", async () => {
+    const a = await login("olivia", e());
+    expect((await app.request("/api/admin/selfhost/connection/seerr", j("DELETE", {}, a), e())).status).toBe(200);
+    expect(local.saved.at(-1)).toEqual({ connections: { seerr: { url: "", key: null, publicUrl: "" } } });
+  });
+  test("it is recorded in the audit log as a field name, never the value", async () => {
+    const a = await login("olivia", e());
+    await put(a, "jellyfin", { publicUrl: "watch.example.com" });
+    const rows = await all<{ detail_json: string }>(env.DB, "SELECT detail_json FROM audit WHERE action = 'selfhost.connection'");
+    expect(JSON.parse(rows[0].detail_json)).toMatchObject({ publicUrl: true });
+    expect(JSON.stringify(rows)).not.toContain("watch.example.com");
+  });
 });

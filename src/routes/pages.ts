@@ -32,15 +32,16 @@ import { ICON_PNG, ICON_SVG } from '../views/icons';
 import { devicesMapJs } from '../views/js/devices-map';
 import { vendorAssets } from '../views/vendor/assets';
 import { glyphs } from '../views/vendor/glyphs';
+import { jellyfinForMembers } from "../addresses";
 export const pageRoutes = new Hono<AppEnv>();
 const csp = "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 pageRoutes.use('*', async (c, next) => {
   await next();
   if (!c.res.headers.get('content-type')?.startsWith('text/html') || c.req.path.startsWith('/api/')) return; // API responses (the invite email preview) set their own policy
   let policy = csp;
-  if (c.req.path === '/' || c.req.path === '/history' || c.req.path === '/admin/streams' || c.req.path === '/wrapped' || c.req.path === '/compare') policy = policy.replace("img-src 'self' data:", "img-src 'self' data: " + new URL(c.env.JELLYFIN_URL).origin);
+  if (c.req.path === '/' || c.req.path === '/history' || c.req.path === '/admin/streams' || c.req.path === '/wrapped' || c.req.path === '/compare') policy = policy.replace("img-src 'self' data:", "img-src 'self' data: " + new URL(jellyfinForMembers(c.env)).origin);
   if (c.req.path === '/admin/invites') policy = policy.replace('frame-src https://challenges.cloudflare.com', "frame-src 'self'"); // the real invite email preview
-  if (c.req.path === '/admin/streams') policy = policy.replace("frame-src", "worker-src blob:; child-src blob:; frame-src").replace("data: " + new URL(c.env.JELLYFIN_URL).origin, "data: blob: " + new URL(c.env.JELLYFIN_URL).origin); // the live streams map
+  if (c.req.path === '/admin/streams') policy = policy.replace("frame-src", "worker-src blob:; child-src blob:; frame-src").replace("data: " + new URL(jellyfinForMembers(c.env)).origin, "data: blob: " + new URL(jellyfinForMembers(c.env)).origin); // the live streams map
   if (c.req.path === '/devices') policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; worker-src blob:; child-src blob:; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
   c.header('Content-Security-Policy', policy);
   c.header('X-Content-Type-Options', 'nosniff');
@@ -97,14 +98,14 @@ pageRoutes.get('/join/continue', async c => {
   const state = await onboarding(c.env.DB, session.jellyfinId);
   if (state.done) return c.redirect('/', 302);
   if (state.kind !== 'new') return c.redirect('/welcome', 302);
-  return c.html(join(null, false, undefined, c.env.JELLYFIN_URL, state.step === "done" || state.experience === "knows-jellyfin" ? "done" : "device", emailOn(c.env)));
+  return c.html(join(null, false, undefined, jellyfinForMembers(c.env), state.step === "done" || state.experience === "knows-jellyfin" ? "done" : "device", emailOn(c.env)));
 });
 pageRoutes.get('/join/:token', async c => {
   // Use the same public API contract for the first server-rendered view and client revalidation.
   const response = await inviteRoutes.request(`/api/invites/${encodeURIComponent(c.req.param('token'))}`, {}, c.env);
   if (response.status === 404) return c.html(invalidInvite(), 404);
   if (!response.ok) return c.html(layout({ title: 'Invite unavailable', body: html`<main class="center"><div class="card authcard"><h1>We could not load your invite</h1><p>Please try again in a moment.</p></div></main>` }), 503);
-  return c.html(join(await response.json() as InviteView, c.env.ENVIRONMENT === 'prod' && !!c.env.TURNSTILE_SITEKEY, c.env.TURNSTILE_SITEKEY, c.env.JELLYFIN_URL, undefined, emailOn(c.env)));
+  return c.html(join(await response.json() as InviteView, c.env.ENVIRONMENT === 'prod' && !!c.env.TURNSTILE_SITEKEY, c.env.TURNSTILE_SITEKEY, jellyfinForMembers(c.env), undefined, emailOn(c.env)));
 });
 
 // Map label fonts, served from the Worker. Only the one bundled font and the ranges we ship.

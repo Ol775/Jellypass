@@ -9,6 +9,7 @@ import { migrate, parseExport } from "../migrate";
 import { cityForIp } from "../signins";
 import { getPreset, presetToPolicy } from "../presets";
 import { maintenanceState } from "../maintenance";
+import { jellyfinForMembers } from "../addresses";
 
 export const adminRoutes = new Hono<AppEnv>();
 type C = Context<AppEnv>;
@@ -191,7 +192,7 @@ adminRoutes.get("/api/admin/streams", async (c) => {
     if (city === null && ip) { const g = await c.var.geo.lookup(ip); city = g?.city ?? g?.country ?? null; lat = g?.lat ?? null; lng = g?.lng ?? null; } // a country-only GeoLite2 file still gives a place
     const isp = ip ? (await c.var.asn.lookup(ip))?.org ?? null : null;
     // The poster loads in the admin's browser from Jellyfin, like Home and Watch history.
-    const posterUrl = m?.itemId ? `${c.env.JELLYFIN_URL.replace(/\/$/, "")}/Items/${encodeURIComponent(m.itemId)}/Images/Primary?maxHeight=300` : null;
+    const posterUrl = m?.itemId ? `${jellyfinForMembers(c.env)}/Items/${encodeURIComponent(m.itemId)}/Images/Primary?maxHeight=300` : null;
     const round = (n: number | null) => (n == null ? null : Math.round(n * 100) / 100); // city-level only
     return { ...st, ip, city, lat: round(lat), lng: round(lng), isp, posterUrl };
    })());

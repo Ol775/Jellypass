@@ -15,6 +15,7 @@ This is where Jellypass is heading. **It is a plan, not a promise**: Jellypass i
 
 | Release | What arrived |
 | --- | --- |
+| **1.0.2** | An optional **Address members use** for Jellyfin and Seerr, so posters, links, the app set-up guide and notification emails work for members outside your network |
 | **1.0.1** | Install guide and troubleshooting guide, a security policy, contributing guide and issue templates, CI, and fixes for the Docker health check with HTTPS, the unwritable-data-folder error and the backup instructions. See the [changelog](CHANGELOG.md) |
 | **1.0.0** | The first public self-hosted release: a Docker image and compose file that work as a Portainer stack, the first-run setup wizard, editing Jellyfin, Seerr and Tracearr connections in Settings, built-in HTTPS (self-signed or your own certificate), Cloudflare Tunnel and reverse-proxy support, optional email and Cloudflare Turnstile, and a version, changelog and update notice |
 

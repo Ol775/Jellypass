@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { requireSession, type AppEnv } from "../auth";
 import { all, first } from "../db";
 import { heightLabel } from "../jellyfin";
+import { jellyfinForMembers } from "../addresses";
 
 export const homeRoutes = new Hono<AppEnv>();
 
@@ -10,7 +11,7 @@ homeRoutes.get("/api/home", requireSession, async (c) => {
   const week = Date.now() - 7 * 86400_000;
   let recentlyAdded: number | null = null;
   let titles: Array<{ id: string; title: string; kind: "film" | "tv"; subtitle: string; posterUrl: string | null }> = [];
-  const base = c.env.JELLYFIN_URL.replace(/\/$/, "");
+  const base = jellyfinForMembers(c.env);
   try {
     const items = await c.var.jf.userItems(c.get("session").jellyfinId, { includeItemTypes: "Movie,Series", recursive: "true", sortBy: "DateCreated", sortOrder: "Descending", limit: "300", fields: "DateCreated,ProductionYear,PrimaryImageAspectRatio" });
     const fresh = items.filter((i) => Date.parse(i.DateCreated) >= week);
@@ -24,7 +25,7 @@ homeRoutes.get("/api/home", requireSession, async (c) => {
 
 /** "Up next": the next episode for each show the member has started. Posters come from their own Jellyfin, like Recently added. */
 homeRoutes.get("/api/home/up-next", requireSession, async (c) => {
-  const base = c.env.JELLYFIN_URL.replace(/\/$/, "");
+  const base = jellyfinForMembers(c.env);
   try {
     const items = await c.var.jf.nextUp(c.get("session").jellyfinId);
     return c.json(items.filter((i) => i.Type === "Episode").slice(0, 12).map((i) => {
@@ -44,7 +45,7 @@ homeRoutes.get("/api/home/alerts", requireSession, async (c) => {
 
 /** "Surprise me": one random film or show (?kind=film|tv) this member has not watched, from their own library. Poster comes from their own Jellyfin. */
 homeRoutes.get("/api/home/surprise", requireSession, async (c) => {
-  const base = c.env.JELLYFIN_URL.replace(/\/$/, "");
+  const base = jellyfinForMembers(c.env);
   try {
     const i = (await c.var.jf.userItems(c.get("session").jellyfinId, { includeItemTypes: c.req.query("kind") === "tv" ? "Series" : "Movie", recursive: "true", filters: "IsUnplayed", sortBy: "Random", limit: "1", fields: "Overview,Genres,OfficialRating,PrimaryImageAspectRatio" }))[0];
     if (!i) return c.json(null);

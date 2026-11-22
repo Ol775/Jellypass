@@ -17,7 +17,7 @@ The full install steps, with the compose file to paste, are in the [README](../R
 
 ## Settings you can change in the app
 
-Settings, **Connections**: the Jellyfin, Seerr and Tracearr address and key. Every change is tested against the live service before it is saved.
+Settings, **Connections**: the Jellyfin, Seerr and Tracearr address and key. Every change is tested against the live service before it is saved. Jellyfin and Seerr also have an optional **Address members use**, for when Jellypass reaches them by an internal address but members use another (it is used for posters, links, the app set-up guide and notification emails, and is not tested because it is meant for members' browsers).
 
 Settings, **Server**:
 - **About and updates**: the version, what changed, and whether a newer release exists (see Updates below).

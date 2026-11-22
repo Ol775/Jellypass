@@ -56,12 +56,16 @@ export function setupPage(publicGuess: string): string {
 <section class="step" data-step="1"><h1 tabindex="-1">Jellyfin</h1><p class="lede">Required. Jellypass signs members in and reads watch history through Jellyfin.</p>
 <label class="lab" for="jf-url">Address</label><input class="field" id="jf-url" inputmode="url" placeholder="http://192.168.1.10:8096">
 <label class="lab" for="jf-key">API key</label>${pw("jf-key")}
-<small>Jellyfin: Dashboard, API Keys, "+". The address must work from inside the container, so not localhost.</small>${err}
+<small>Jellyfin: Dashboard, API Keys, "+". The address must work from inside the container, so not localhost.</small>
+<label class="lab" for="jf-pub">Address members use <span class="muted">(optional)</span></label><input class="field" id="jf-pub" inputmode="url" placeholder="watch.example.com">
+<small>Only if members connect from outside your network, by a different address. Used for posters, Open in Jellyfin links and the app set-up guide. Leave blank to use the address above.</small>${err}
 <div class="wrow"><button class="btn ghost" data-back>Back</button><span class="sp"></span><button class="btn pri" data-next><span class="sp8"></span>Test and continue</button></div></section>
 
 <section class="step" data-step="2"><h1 tabindex="-1">Seerr</h1><p class="lede">Optional. Lets members make and follow requests.</p>
 <label class="lab" for="se-url">Address</label><input class="field" id="se-url" inputmode="url" placeholder="http://192.168.1.10:5055">
-<label class="lab" for="se-key">API key</label>${pw("se-key")}<small>Seerr: Settings, General.</small>${err}
+<label class="lab" for="se-key">API key</label>${pw("se-key")}<small>Seerr: Settings, General.</small>
+<label class="lab" for="se-pub">Address members use <span class="muted">(optional)</span></label><input class="field" id="se-pub" inputmode="url" placeholder="requests.example.com">
+<small>Only if members use a different address. Used for the Open Seerr buttons.</small>${err}
 <div class="wrow"><button class="btn ghost" data-back>Back</button><span class="sp"></span><button class="btn" data-skip>Skip</button><button class="btn pri" data-next><span class="sp8"></span>Test and continue</button></div></section>
 
 <section class="step" data-step="3"><h1 tabindex="-1">Tracearr</h1><p class="lede">Optional. Powers live streams and sign-in locations for admins.</p>
@@ -105,17 +109,17 @@ async function api(body){
   if(!r.ok)throw new Error(j.error||'Something went wrong.');return j;
 }
 async function busy(btn,fn){btn.disabled=true;btn.classList.add('busy');if(!btn.firstElementChild)btn.insertAdjacentHTML('afterbegin','<span class="sp8"></span>');try{await fn()}finally{btn.disabled=false;btn.classList.remove('busy')}}
-const svc=(n,key,url,k)=>async()=>{
+const svc=(n,key,url,k,pubId)=>async()=>{
   const u=clean($('#'+url).value),v=$('#'+k).value.trim();
   if(!u||!v)throw new Error('Enter both the address and the key, or skip this step.');
-  const j=await api({action:'test',service:key,url:u,key:v});D[n]={url:u,key:v};if(j.posters){delete $('#poster-wall').dataset.built;import('/assets/wall.js?w='+Date.now()).catch(()=>{});}
+  const j=await api({action:'test',service:key,url:u,key:v});D[n]={url:u,key:v,publicUrl:(($('#'+pubId)||{}).value||'').trim()};if(j.posters){delete $('#poster-wall').dataset.built;import('/assets/wall.js?w='+Date.now()).catch(()=>{});}
 };
 const handlers={
   0:async()=>{},
-  1:svc('jf','jellyfin','jf-url','jf-key'),2:svc('se','seerr','se-url','se-key'),3:svc('tr','tracearr','tr-url','tr-key'),
+  1:svc('jf','jellyfin','jf-url','jf-key','jf-pub'),2:svc('se','seerr','se-url','se-key','se-pub'),3:svc('tr','tracearr','tr-url','tr-key'),
   4:async()=>{const v=clean($('#pub').value);try{if(!/^https?:$/.test(new URL(v).protocol))throw 0}catch{throw new Error('Enter an address starting http:// or https://')}D.pub=v;
     const r=$('#review');const row=(a,b)=>'<dt>'+a+'</dt><dd></dd>';r.innerHTML='';
-    [['Address',D.pub],['Jellyfin',D.jf.url],['Seerr',D.se.url||'Skipped'],['Tracearr',D.tr.url||'Skipped']].forEach(([a,b])=>{const t=document.createElement('dt');t.textContent=a;const d=document.createElement('dd');d.textContent=b;r.append(t,d)});},
+    [['Address',D.pub],['Jellyfin',D.jf.url],...(D.jf.publicUrl?[['Members use for Jellyfin',D.jf.publicUrl]]:[]),['Seerr',D.se.url||'Skipped'],...(D.se.publicUrl?[['Members use for Seerr',D.se.publicUrl]]:[]),['Tracearr',D.tr.url||'Skipped']].forEach(([a,b])=>{const t=document.createElement('dt');t.textContent=a;const d=document.createElement('dd');d.textContent=b;r.append(t,d)});},
   5:async()=>{const j=await api({action:'save',publicUrl:D.pub,jellyfin:D.jf,seerr:D.se,tracearr:D.tr});$('#go').href=j.next;fill.style.width='100%';
     dots.forEach(d=>{d.classList.remove('on');d.classList.add('done')});},
 };

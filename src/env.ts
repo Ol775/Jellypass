@@ -14,7 +14,7 @@ export interface LocalAbout {
 export interface LocalSettings {
   network: LocalNetwork;
   emailEnabled: boolean;
-  connections: Record<Service, { url: string; keySet: boolean }>;
+  connections: Record<Service, { url: string; keySet: boolean; publicUrl?: string }>;
   turnstile: { siteKey: string; secretSet: boolean };
   smtp: { host: string; port: number; secure: boolean; user: string; from: string; passSet: boolean };
 }
@@ -22,7 +22,7 @@ export interface LocalPatch {
   updateCheck?: boolean;
   network?: { publicUrl?: string; tlsMode?: "" | "self-signed" | "custom"; tlsHosts?: string; trustProxy?: boolean; cert?: string; key?: string };
   emailEnabled?: boolean;
-  connections?: Partial<Record<Service, { url?: string; key?: string | null }>>;
+  connections?: Partial<Record<Service, { url?: string; key?: string | null; publicUrl?: string }>>;
   turnstile?: { siteKey?: string; secret?: string | null };
   smtp?: { host?: string; port?: number; secure?: boolean; user?: string; from?: string; pass?: string | null };
 }
@@ -43,8 +43,12 @@ export interface Env {
   DEMO_COMPARE?: string;
   JELLYFIN_URL: string;
   JELLYFIN_ADMIN_KEY: string;
+  /** Optional: the Jellyfin address members' browsers and emails use, when it differs from the address Jellypass connects to. */
+  JELLYFIN_PUBLIC_URL?: string;
   SEERR_URL: string;
   SEERR_API_KEY: string;
+  /** Optional: the Seerr address the "Open Seerr" buttons use, when it differs from the address Jellypass connects to. */
+  SEERR_PUBLIC_URL?: string;
   TRACEARR_URL: string;
   TRACEARR_TOKEN: string;
   CF_ACCESS_CLIENT_ID: string;

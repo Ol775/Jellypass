@@ -5,6 +5,7 @@ import { audit } from "../audit";
 import { compareHistories, personStats, sharedByAll } from "../compare";
 import { demoOthers, demoPeople, demoPoster, demoRows, demoSeed, isDemo } from "../compare-demo";
 import { getHistory } from "../history";
+import { jellyfinForMembers } from "../addresses";
 
 export const compareRoutes = new Hono<AppEnv>();
 compareRoutes.use("/api/compare", requireSession);
@@ -46,16 +47,16 @@ compareRoutes.get("/api/compare/now", async (c) => {
     if (mine) {
       let startedAt: string | null = null;
       try { startedAt = (await c.var.tracearr.liveStreams()).find((t) => t.username.toLowerCase() === s.username.toLowerCase())?.startedAt ?? null; } catch { /* the start time is a nicety; Tracearr may be down */ }
-      const base = c.env.JELLYFIN_URL.replace(/\/$/, "");
+      const base = jellyfinForMembers(c.env);
       own.push({ you: true, id: s.jellyfinId.replace(/-/g, "").toLowerCase(), posterUrl: mine.posterId ? `${base}/Items/${encodeURIComponent(mine.posterId)}/Images/Primary?maxHeight=300` : null, url: mine.itemId ? `${base}/web/#/details?id=${encodeURIComponent(mine.itemId)}` : null, name: s.username, title: mine.title, subtitle: mine.subtitle, episodeName: mine.episodeName, year: mine.year, rating: mine.rating, genres: mine.genres, runtimeMinutes: mine.runtimeMinutes, progressPct: mine.progressPct, paused: mine.paused, startedAt, endsAt: mine.remainingSeconds == null ? null : new Date(Date.now() + mine.remainingSeconds * 1000).toISOString() });
     }
     const demo = isDemo(c.env); // beta review aid, see DEMO_COMPARE in env.ts
-    if (demo && !mine) own.push(demoOwnStream(s.jellyfinId, s.username, c.env.JELLYFIN_URL));
+    if (demo && !mine) own.push(demoOwnStream(s.jellyfinId, s.username, jellyfinForMembers(c.env)));
     return c.json([...own, ...(demo ? demoOthers : []), ...playing.flatMap((x) => {
       const p = byId.get(x.userId);
       if (!p || seen.has(x.userId)) return [];
       seen.add(x.userId);
-      return [{ id: p.jellyfin_id, name: p.username, title: x.title, subtitle: x.subtitle, paused: x.paused, posterUrl: x.posterId ? `${c.env.JELLYFIN_URL.replace(/\/$/, "")}/Items/${encodeURIComponent(x.posterId)}/Images/Primary?maxHeight=300` : null }];
+      return [{ id: p.jellyfin_id, name: p.username, title: x.title, subtitle: x.subtitle, paused: x.paused, posterUrl: x.posterId ? `${jellyfinForMembers(c.env)}/Items/${encodeURIComponent(x.posterId)}/Images/Primary?maxHeight=300` : null }];
     })]);
   } catch { return c.json({ error: "could not check who is watching right now" }, 502); }
 });
@@ -83,7 +84,7 @@ compareRoutes.get("/api/compare/group", async (c) => {
     return c.json({
       people: people.map((p) => ({ id: p.id, name: p.name, you: p.you, stats: personStats(p.rows) })),
       matches: people.slice(1).map((p) => ({ id: p.id, name: p.name, ...(({ matchPct, shared }) => ({ matchPct, shared: shared.length }))(compareHistories(people[0].rows, p.rows)) })),
-      shared: withLinks(shared, c.env.JELLYFIN_URL),
+      shared: withLinks(shared, jellyfinForMembers(c.env)),
     });
   } catch { return c.json({ error: "could not load the comparison right now" }, 502); }
 });
@@ -101,7 +102,7 @@ compareRoutes.get("/api/compare/:id", async (c) => {
   try {
     const [a, b] = await Promise.all([getHistory(c.var.jf, c.env, s.jellyfinId, hidden(mine?.hidden_history_json)), getHistory(c.var.jf, c.env, id, hidden(other.hidden_history_json))]);
     const r = compareHistories(a, b);
-    return c.json({ name: other.username, ...r, shared: withLinks(r.shared, c.env.JELLYFIN_URL) });
+    return c.json({ name: other.username, ...r, shared: withLinks(r.shared, jellyfinForMembers(c.env)) });
   } catch { return c.json({ error: "could not load the comparison right now" }, 502); }
 });
 

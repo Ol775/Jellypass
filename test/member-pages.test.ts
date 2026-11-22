@@ -319,3 +319,17 @@ test('with no Seerr address configured the Open Seerr buttons are not shown',asy
  expect(body).not.toContain('Open Seerr');
  expect(await(await app.request('/discover',{headers:{cookie}},env)).text()).toContain('Open Seerr');
 });
+
+test('members are sent to the public Jellyfin and Seerr addresses when they are set, not the connection addresses',async()=>{
+ const cookie=await login();
+ const e={...env,JELLYFIN_URL:'http://192.168.1.10:8096',JELLYFIN_PUBLIC_URL:'https://watch.example.com',SEERR_URL:'http://192.168.1.10:5055',SEERR_PUBLIC_URL:'https://requests.example.com'};
+ const csp=(await app.request('/',{headers:{cookie}},e)).headers.get('content-security-policy')||'';
+ expect(csp).toContain('https://watch.example.com');expect(csp).not.toContain('192.168.1.10');
+ const help=await(await app.request('/help',{headers:{cookie}},e)).text();
+ expect(help).toContain('watch.example.com');expect(help).not.toContain('192.168.1.10');
+ const discover=await(await app.request('/discover',{headers:{cookie}},e)).text();
+ expect(discover).toContain('href="https://requests.example.com"');expect(discover).not.toContain('192.168.1.10');
+ // with no public address set, the connection address is used as before
+ const plain=await(await app.request('/discover',{headers:{cookie}},{...e,SEERR_PUBLIC_URL:''})).text();
+ expect(plain).toContain('href="http://192.168.1.10:5055"');
+});

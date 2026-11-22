@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from "hono";
 import { loadSession, type AppEnv } from "./auth";
 import { all } from "./db";
 import { maintenancePage, type ServiceStatus } from "./views/error-pages";
+import { jellyfinForMembers, seerrForMembers } from "./addresses";
 
 export type MaintenanceState = { enabled: boolean; message: string; startsAt: string | null; endsAt: string | null; active: boolean };
 const KEYS = "'maintenance', 'maintenance_message', 'maintenance_start', 'maintenance_end'";
@@ -24,7 +25,7 @@ const when = (iso: string) => new Intl.DateTimeFormat("en-GB", { weekday: "short
 async function serviceStatuses(env: AppEnv["Bindings"], now = Date.now()): Promise<ServiceStatus[]> {
   const rows = await all<{ service: string; ok: number; at: string }>(env.DB, "SELECT service, ok, at FROM status_checks WHERE id IN (SELECT max(id) FROM status_checks WHERE service IN ('jellyfin','seerr') GROUP BY service)").catch(() => []);
   const link = (u?: string) => { try { const x = new URL(u ?? ""); return x.protocol === "https:" ? x.origin : undefined; } catch { return undefined; } }; // never link a LAN address
-  return ([["jellyfin", "Jellyfin", env.JELLYFIN_URL], ["seerr", "Jellyseerr", env.SEERR_URL]] as const).map(([key, name, url]) => {
+  return ([["jellyfin", "Jellyfin", jellyfinForMembers(env)], ["seerr", "Jellyseerr", seerrForMembers(env)]] as const).map(([key, name, url]) => {
     const r = rows.find((x) => x.service === key);
     const fresh = r && now - Date.parse(r.at) < 15 * 60_000;
     return { name, url: link(url), state: !fresh ? "unknown" : r.ok ? "up" : "down" } as ServiceStatus;

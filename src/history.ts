@@ -1,5 +1,6 @@
 import type { Env } from "./env";
 import type { Jellyfin } from "./jellyfin";
+import { jellyfinForMembers } from "./addresses";
 
 export interface HistoryRow { id: string; kind: "film" | "tv"; title: string; subtitle: string; posterUrl: string | null; lastPlayed: string | null; playCount: number; resumePct: number | null; runtimeMinutes: number | null; genres: string[]; /** The film's id, or the series' id for an episode: where "Open in Jellyfin" goes. */ linkId?: string }
 
@@ -10,7 +11,7 @@ export async function getHistory(jf: Pick<Jellyfin, "userItems" | "resume">, env
     jf.userItems(userId, { filters: "IsPlayed", includeItemTypes: "Movie,Episode", recursive: "true", sortBy: "DatePlayed", sortOrder: "Descending", limit: "1000", fields: FIELDS }),
     jf.resume(userId),
   ]);
-  const base = env.JELLYFIN_URL.replace(/\/$/, "");
+  const base = jellyfinForMembers(env);
   const byId = new Map<string, any>();
   for (const it of [...played, ...resuming]) {
     const prev = byId.get(it.Id);

@@ -4,6 +4,7 @@ import { loadSession, type AppEnv } from '../auth';
 import { getMember } from '../members';
 import { appShell, compareLink, memberLinks } from '../views/shell';
 import { memberBody } from '../views/member-pages';
+import { jellyfinForMembers, seerrForMembers } from "../addresses";
 export const memberPageRoutes = new Hono<AppEnv>();
 for (const [active,path,title] of [...memberLinks,compareLink]) memberPageRoutes.get(path,async c=>{
  c.header('Cache-Control','no-store');
@@ -15,5 +16,5 @@ for (const [active,path,title] of [...memberLinks,compareLink]) memberPageRoutes
  // Compare is opt-in: the page and its menu entry exist only for members who switched it on in Settings.
  if(active==='compare'&&!member?.compare_on)return c.redirect('/settings',302);
  const announcements=await all<{title:string;body:string}>(c.env.DB,'SELECT title, body FROM announcements WHERE active = 1 ORDER BY id DESC LIMIT 20');
- return c.html(appShell({title,active,announcements,compare:!!member?.compare_on,isAdmin:session.isAdmin,session,body:memberBody(active,session.username,c.env.JELLYFIN_URL,c.env.SEERR_URL)}));
+ return c.html(appShell({title,active,announcements,compare:!!member?.compare_on,isAdmin:session.isAdmin,session,body:memberBody(active,session.username,jellyfinForMembers(c.env),seerrForMembers(c.env))}));
 });

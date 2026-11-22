@@ -4,6 +4,7 @@ import { getHistory } from "../history";
 import { secureToken } from "../signins";
 import { hasPush, sendPush, type PushDeps } from "../push";
 import type { CronDeps } from "./types";
+import { jellyfinForMembers } from "../addresses";
 
 const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
 const HOUR = 3600_000, DAY = 24 * HOUR;
@@ -65,7 +66,7 @@ export async function weeklySummaries(d: CronDeps) {
 
 /** "Your request is now in Jellyfin": for opted-in members, once per request, only for ones that became available in the last day. */
 export async function readyRequests(d: CronDeps) {
-  const base = d.env.JELLYFIN_URL.replace(/\/$/, "");
+  const base = jellyfinForMembers(d.env);
   let sent = 0;
   const who = await all<{ jellyfin_id: string; username: string; contact_email: string | null; email_ok: number; seerr_user_id: number }>(d.db,
     "SELECT jellyfin_id, username, contact_email, (ready_on = 1 AND email_verified = 1 AND contact_email IS NOT NULL) AS email_ok, seerr_user_id FROM members m WHERE seerr_user_id IS NOT NULL AND ((ready_on = 1 AND email_verified = 1 AND contact_email IS NOT NULL) OR EXISTS (SELECT 1 FROM push_subscriptions p WHERE p.jellyfin_id = m.jellyfin_id))");
