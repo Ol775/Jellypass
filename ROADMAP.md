@@ -1,6 +1,6 @@
 # Roadmap
 
-<p align="center"><img src="docs/images/roadmap.png" alt="Jellypass roadmap in three columns. Shipped in 1.0: Docker image and Portainer stack, first-run setup wizard, editing connections in Settings, HTTPS with a self-signed or your own certificate, Cloudflare Tunnel and proxy support, optional email and sign-in challenge, version and changelog with an update notice, and the install, troubleshooting and security guides. Up next: try the Cloudflare Tunnel setup on a real tunnel, real-device checks, scheduled automatic backups, an optional lock on first-run setup, and encrypting saved API keys. Later: sign-in page posters from your own library, resolving addresses before connecting, an HSTS switch, Unraid, Synology and TrueNAS guides, light-theme screenshots, and moving to a newer Node release." width="100%"></p>
+<p align="center"><img src="docs/images/roadmap.png" alt="Jellypass roadmap in three columns. Shipped in 1.0: Docker image and Portainer stack, first-run setup wizard, editing connections in Settings, HTTPS with a self-signed or your own certificate, Cloudflare Tunnel and proxy support, optional email and sign-in challenge, version and changelog with an update notice, and the install, troubleshooting and security guides. Up next: scheduled automatic backups, an optional lock on first-run setup, and encrypting saved API keys. Later: sign-in page posters from your own library, resolving addresses before connecting, an HSTS switch, Unraid, Synology and TrueNAS guides, light-theme screenshots, and moving to a newer Node release." width="100%"></p>
 
 This is where Jellypass is heading. **It is a plan, not a promise**: Jellypass is a one-person hobby project, so there are no dates, and priorities change with what breaks, what people ask for and what I have time for. The picture above is a summary; this page has the detail.
 
@@ -20,15 +20,13 @@ This is where Jellypass is heading. **It is a plan, not a promise**: Jellypass i
 
 ## 🗓️ Up next
 
-In rough priority order. These close gaps that the docs already admit to.
+In rough priority order. These close gaps that the docs already admit to, and they make the setup safer to leave running.
 
 | # | Item | Why |
 | --- | --- | --- |
-| 1 | **Try the Cloudflare Tunnel setup on a real tunnel** | The tunnel service in the compose file is written and the steps are documented, but the author has not run it end to end against a real tunnel. Until then it is marked untested in the [self-hosting guide](docs/SELF-HOSTING.md#https-pick-one) |
-| 2 | **Real-device checks** | Passkeys, authenticator-app codes and web push are covered by tests but still need a proper pass on real phones and browsers, and the phone and TV set-up guides need checking on real devices |
-| 3 | **Scheduled automatic backups** | Backup and restore work and are [documented and tested](docs/INSTALL.md#backup-and-restore), but they are manual. Automatic backups into the data volume, with a restore tried regularly, would remove the "I forgot" failure |
-| 4 | **Optional lock on first-run setup** | Today whoever opens the site first can finish setup, which is listed under [known limitations](SECURITY.md#known-limitations). An optional setup password (off by default, so the one-minute install stays one minute) would close it for people who need that |
-| 5 | **Encrypt saved API keys at rest** | The Jellyfin, Seerr and Tracearr keys sit in `config.json`, protected only by file permissions (see [known limitations](SECURITY.md#known-limitations)). Encrypting them would make a stolen backup less harmful |
+| 1 | **Scheduled automatic backups** | Backup and restore work and are [documented and tested](docs/INSTALL.md#backup-and-restore), but they are manual. Automatic backups into the data volume, with a restore tried regularly, would remove the "I forgot" failure |
+| 2 | **Optional lock on first-run setup** | Today whoever opens the site first can finish setup, which is listed under [known limitations](SECURITY.md#known-limitations). An optional setup password (off by default, so the one-minute install stays one minute) would close it for people who need that |
+| 3 | **Encrypt saved API keys at rest** | The Jellyfin, Seerr and Tracearr keys sit in `config.json`, protected only by file permissions (see [known limitations](SECURITY.md#known-limitations)). Encrypting them would make a stolen backup less harmful |
 
 ## 💡 Later
 
