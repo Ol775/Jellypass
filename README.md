@@ -41,18 +41,16 @@ Settings, Server: the version and what changed, the public address, built-in HTT
 
 The screenshots use a demo server and example addresses.
 
-## Quick start
+## Install
 
-```sh
-curl -O https://raw.githubusercontent.com/Ol775/Jellypass/main/docker-compose.yml
-docker compose up -d
-```
+You need a Jellyfin administrator API key (Jellyfin: Dashboard, API Keys). Nothing else is required up front: the setup wizard asks for the rest the first time you open the site.
 
-Then open `http://<your-server>:8787` and follow the setup wizard. You need a Jellyfin administrator API key (Jellyfin: Dashboard, API Keys). In Portainer, paste the compose file into a new stack instead. The full guide, including HTTPS, tunnels and updates, is in [docs/SELF-HOSTING.md](docs/SELF-HOSTING.md).
+### Portainer (as a stack)
 
-### The compose file
-
-This is the whole `docker-compose.yml`, ready to paste into a Portainer stack (Stacks, Add stack, Web editor):
+1. In Portainer choose **Stacks**, then **Add stack**, and name it `jellypass`.
+2. Pick **Web editor** and paste the compose file below. (Or pick **Repository** instead, use `https://github.com/Ol775/Jellypass` with the compose path `docker-compose.yml`, and Portainer fetches it for you.)
+3. Press **Deploy the stack**.
+4. Open `http://<your-server>:8787` and follow the setup wizard.
 
 ```yaml
 # Jellypass, self-hosted. Paste into a Portainer stack (Stacks > Add stack > Web editor)
@@ -107,6 +105,30 @@ services:
 volumes:
   jellypass-data:
 ```
+
+To update later, open the stack and choose **Pull and redeploy**. Your data stays in the `jellypass-data` volume.
+
+### Docker Compose
+
+Save the YAML above as `docker-compose.yml` in a new folder (or download it with `curl -O https://raw.githubusercontent.com/Ol775/Jellypass/main/docker-compose.yml`), then run:
+
+```sh
+docker compose up -d
+```
+
+Open `http://<your-server>:8787`. To update: `docker compose pull && docker compose up -d`.
+
+### Plain Docker
+
+No compose needed:
+
+```sh
+docker run -d --name jellypass --restart unless-stopped \
+  -p 8787:8787 -v jellypass-data:/data \
+  ghcr.io/ol775/jelly-pass:latest
+```
+
+HTTPS, a Cloudflare Tunnel, email and everything else you can change afterwards are covered in [docs/SELF-HOSTING.md](docs/SELF-HOSTING.md).
 
 ## Status
 
