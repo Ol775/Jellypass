@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/images/hero.png" alt="Jellypass: a members' portal for a private Jellyfin library. The Settings, Connections screen shows Jellyfin and Seerr as working, with the first-run setup wizard in front, over a wall of film posters." width="100%"></p>
+
 # Jellypass
 
 A members' portal for a private [Jellyfin](https://jellyfin.org) library, for the person who runs a server for family and friends. People get an invite link, set up their own account and devices, request titles through [Seerr](https://docs.seerr.dev), and see their own history. You get admin tools to manage who has access and for how long.
@@ -22,6 +24,22 @@ Jellypass reads everything about what people watch live from Jellyfin and Seerr.
 - First-run setup wizard, then everything is editable in Settings: connections, public address, HTTPS (self-signed or your own certificate), Cloudflare Turnstile and SMTP
 - Works behind a reverse proxy or a Cloudflare Tunnel; email is optional
 - Version, changelog and an update notice
+
+## Screenshots
+
+The first-run wizard connects Jellyfin, Seerr and Tracearr and tests each one before moving on.
+
+![The Jellypass setup wizard at step 2 of 6, asking for the Jellyfin address and API key, over a wall of poster tiles](docs/images/screenshot-setup.jpg)
+
+Settings, Connections: change a service's address or key at any time. Every change is tested before it is saved.
+
+![Jellypass Settings, Connections tab: Jellyfin and Seerr shown as Working, Tracearr not set up, each with address and API key fields](docs/images/screenshot-connections.png)
+
+Settings, Server: the version and what changed, the public address, built-in HTTPS and proxy trust, the sign-in challenge and email. Changes apply without a restart.
+
+![Jellypass Settings, Server tab: About and updates showing version 1.0.0 is the latest, and the Address and HTTPS card](docs/images/screenshot-server.png)
+
+The screenshots use a demo server and example addresses.
 
 ## Quick start
 
