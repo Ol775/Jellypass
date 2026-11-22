@@ -27,9 +27,9 @@ Jellypass reads everything about what people watch live from Jellyfin and Seerr.
 
 ## Screenshots
 
-The first-run wizard connects Jellyfin, Seerr and Tracearr and tests each one before moving on.
+The first-run wizard connects Jellyfin, Seerr and Tracearr and tests each one before moving on. When Jellyfin connects, the background fills with posters from your library.
 
-![The Jellypass setup wizard at step 2 of 6, asking for the Jellyfin address and API key, over a wall of poster tiles](docs/images/screenshot-setup.jpg)
+![Animated walkthrough of the Jellypass setup wizard: enter the Jellyfin address and API key, connect it, skip Seerr and Tracearr, set the public address, then finish](docs/images/setup-wizard.gif)
 
 Settings, Connections: change a service's address or key at any time. Every change is tested before it is saved.
 
