@@ -135,6 +135,7 @@ The full walkthrough (getting the Jellyfin key, the setup wizard step by step, y
 - [Install guide](docs/INSTALL.md): from nothing to your first invited member
 - [Troubleshooting](docs/TROUBLESHOOTING.md): symptoms, causes and fixes, with the exact error messages
 - [Self-hosting reference](docs/SELF-HOSTING.md): HTTPS options, Cloudflare Tunnel, email, every environment variable
+- [Roadmap](ROADMAP.md): what is shipped, what is next, and what is not planned
 - [Security policy](SECURITY.md): how to report a vulnerability, how Jellypass protects you, and known limitations
 - [Contributing](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Changelog](CHANGELOG.md)
