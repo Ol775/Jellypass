@@ -1,6 +1,6 @@
 # Jellypass, self-hosted. Paste into a Portainer stack (Stacks > Add stack > Web editor)
 # No variables are needed: open the site on first run and a setup page asks for Jellyfin, Seerr and Tracearr.
-# Variables are only starting values: anything saved in the app (Settings, Sign-in and email) wins.
+# Variables are only starting values: anything saved in the app (Settings, Server) wins.
 services:
   jellypass:
     image: ${JELLYPASS_IMAGE:-ghcr.io/ol775/jelly-pass:latest}

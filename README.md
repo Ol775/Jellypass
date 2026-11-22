@@ -50,6 +50,64 @@ docker compose up -d
 
 Then open `http://<your-server>:8787` and follow the setup wizard. You need a Jellyfin administrator API key (Jellyfin: Dashboard, API Keys). In Portainer, paste the compose file into a new stack instead. The full guide, including HTTPS, tunnels and updates, is in [docs/SELF-HOSTING.md](docs/SELF-HOSTING.md).
 
+### The compose file
+
+This is the whole `docker-compose.yml`, ready to paste into a Portainer stack (Stacks, Add stack, Web editor):
+
+```yaml
+# Jellypass, self-hosted. Paste into a Portainer stack (Stacks > Add stack > Web editor)
+# No variables are needed: open the site on first run and a setup page asks for Jellyfin, Seerr and Tracearr.
+# Variables are only starting values: anything saved in the app (Settings, Server) wins.
+services:
+  jellypass:
+    image: ${JELLYPASS_IMAGE:-ghcr.io/ol775/jelly-pass:latest}
+    # To build from a checkout instead of pulling: uncomment, and run `docker compose up -d --build`.
+    # build: .
+    container_name: jellypass
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDR:-0.0.0.0}:${PORT:-8787}:8787"   # set BIND_ADDR=127.0.0.1 if the proxy runs on this host; put a TLS reverse proxy (Caddy, Nginx Proxy Manager, Traefik) in front of this
+    volumes:
+      - jellypass-data:/data   # SQLite database; map tiles and GeoIP files go in /data/tiles
+    environment:
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      JELLYFIN_URL: ${JELLYFIN_URL:-}
+      JELLYFIN_ADMIN_KEY: ${JELLYFIN_ADMIN_KEY:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      TLS_MODE: ${TLS_MODE:-}        # empty = plain http (behind a proxy/tunnel); self-signed = built-in https; custom = your cert in /data/tls
+      TLS_HOSTS: ${TLS_HOSTS:-}      # extra names/IPs for the self-signed certificate, e.g. 192.168.1.10,jellypass.lan
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      TURNSTILE_SITEKEY: ${TURNSTILE_SITEKEY:-}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+      SEERR_URL: ${SEERR_URL:-}
+      SEERR_API_KEY: ${SEERR_API_KEY:-}
+      TRACEARR_URL: ${TRACEARR_URL:-}
+      TRACEARR_TOKEN: ${TRACEARR_TOKEN:-}
+      KEYS_SECRET: ${KEYS_SECRET:-}
+      VAPID_KEYS: ${VAPID_KEYS:-}
+      MAIL_FROM: ${MAIL_FROM:-jellypass@localhost}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+
+  # Optional Cloudflare Tunnel. Turn it on with COMPOSE_PROFILES=tunnel and a TUNNEL_TOKEN from Cloudflare Zero Trust
+  # (Networks, Tunnels). Point the tunnel's public hostname at http://jellypass:8787, set PUBLIC_URL to that https
+  # address and TRUST_PROXY=true. With a tunnel you can remove the ports: section above so nothing is exposed on the LAN.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on: [jellypass]
+
+volumes:
+  jellypass-data:
+```
+
 ## Status
 
 Jellypass has run a family Jellyfin library daily since 2026. The self-hosted version is new in 1.0.0, so expect rough edges; issues and pull requests are welcome. See the [changelog](CHANGELOG.md).
