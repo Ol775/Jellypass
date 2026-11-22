@@ -1,5 +1,7 @@
 # Install guide
 
+Want to see it first? There's a [live demo](https://jellypass.peacock665.com) of the self-hosted version, with made-up data and a guided tour. It shows the same screens you'll get, including Settings, Server.
+
 A complete walkthrough from nothing to a working Jellypass with your first member invited. If something goes wrong, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md). For reference material (HTTPS options, every environment variable, the update check) see [SELF-HOSTING.md](SELF-HOSTING.md).
 
 **Contents:** [What you need](#what-you-need) · [Get a Jellyfin API key](#get-a-jellyfin-api-key) · [Install](#install) · [The setup wizard](#the-setup-wizard) · [After installing](#after-installing) · [Updating](#updating) · [Backup and restore](#backup-and-restore) · [Moving to a new server](#moving-to-a-new-server) · [Uninstalling](#uninstalling) · [What is stored where](#what-is-stored-where)

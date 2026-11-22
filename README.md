@@ -4,7 +4,7 @@
 
 A members' portal for a private [Jellyfin](https://jellyfin.org) library, for the person who runs a server for family and friends. People get an invite link, set up their own account and devices, request titles through [Seerr](https://docs.seerr.dev), and see their own history. You get admin tools to manage who has access and for how long.
 
-**[Try the live demo](https://jellypass.peacock665.com)**: the real app with made-up films and people. Sign in as a member or an admin with one click and look around. It resets itself every few minutes.
+**[Try the live demo](https://jellypass.peacock665.com)**: the self-hosted version, with made-up films and people. Pass a quick human check, sign in as a member or an admin with one click, and take the guided tour. It resets itself every few minutes.
 
 Jellypass reads everything about what people watch live from Jellyfin and Seerr. Its own database only holds what they cannot: invites, access levels and end dates, preferences, notices and the audit log.
 
