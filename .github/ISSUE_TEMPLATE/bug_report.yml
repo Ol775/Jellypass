@@ -1,0 +1,58 @@
+name: Bug report
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please check the [troubleshooting guide](https://github.com/Ol775/Jellypass/blob/main/docs/TROUBLESHOOTING.md) first. **Do not post API keys, tokens, passwords or your `config.json`.** For security problems use the private report link instead.
+  - type: input
+    id: version
+    attributes:
+      label: Jellypass version
+      description: Settings, Server, "About and updates", or the first line of `docker logs`
+      placeholder: "1.0.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How is it installed?
+      options: [Portainer stack, Docker Compose, Plain docker run, Built from source, Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: access
+    attributes:
+      label: How do you reach it?
+      options: [Directly over http, Built-in HTTPS (self-signed), Built-in HTTPS (own certificate), Reverse proxy, Cloudflare Tunnel, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include the exact error text you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. ...\n2. ...\n3. ..."
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "`docker logs --tail 100 <container>` with anything secret removed"
+      render: text
+  - type: input
+    id: jellyfin
+    attributes:
+      label: Jellyfin version (and Seerr / Tracearr if relevant)

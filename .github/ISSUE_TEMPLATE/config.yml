@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security problem
+    url: https://github.com/Ol775/Jellypass/security/advisories/new
+    about: Please report vulnerabilities privately, not as a public issue.
+  - name: Install or troubleshooting help
+    url: https://github.com/Ol775/Jellypass/blob/main/docs/TROUBLESHOOTING.md
+    about: Many problems (port in use, sign-in loops, certificates, email) are already covered here.
